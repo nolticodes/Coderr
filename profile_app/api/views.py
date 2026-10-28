@@ -5,7 +5,7 @@ from rest_framework.exceptions import NotFound
 
 from profile_app.models import Profile
 
-from .serializers import GetProfileDetailsSerializer, PatchProfileDetailsSerializer
+from .serializers import GetProfileDetailsSerializer, PatchProfileDetailsRequestSerializer, PatchProfileDetailsResponseSerializer
 
 from .permissions import IsOwnerOrReadOnly
 
@@ -25,7 +25,7 @@ class ProfileDetailsView(generics.RetrieveUpdateDestroyAPIView):
             return GetProfileDetailsSerializer
 
         if self.request.method == "PATCH":
-            return PatchProfileDetailsSerializer
+            return PatchProfileDetailsRequestSerializer
 
         return GetProfileDetailsSerializer
 
@@ -34,3 +34,25 @@ class ProfileDetailsView(generics.RetrieveUpdateDestroyAPIView):
             return [IsAuthenticated()]
 
         return [IsAuthenticated(), IsOwnerOrReadOnly()]
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_update(serializer)
+
+        response_serializer = PatchProfileDetailsResponseSerializer(
+            serializer.instance,
+        )
+
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_200_OK
+        )
