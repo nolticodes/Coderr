@@ -1,6 +1,10 @@
 
-from django.urls import path, include
+from django.urls import path
+
+from .views import (
+    RegistrationPostView,
+    )
 
 urlpatterns = [
-    path('registration/', include('auth_app.api.urls'), name='registration')
+    path('registration/', RegistrationPostView.as_view(), name='registration')
 ]
