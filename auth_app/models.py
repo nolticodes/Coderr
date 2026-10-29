@@ -10,7 +10,7 @@ class User(AbstractUser):
         ('business', 'Business')
     ]
 
-    username = models.CharField(max_length=50)
+    username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     password = models.CharField()
     type = models.CharField(choices=TYPE_CHOICES, default="customer")
