@@ -14,5 +14,5 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     password = models.CharField()
     type = models.CharField(choices=TYPE_CHOICES, default="customer")
-    created_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
     
