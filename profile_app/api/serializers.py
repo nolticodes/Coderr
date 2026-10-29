@@ -71,3 +71,36 @@ class PatchProfileDetailsResponseSerializer(serializers.ModelSerializer):
             "email",
             "created_at",
         ]
+
+
+class GetBusinessProfilesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = [
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "location",
+            "tel",
+            "description",
+            "working_hours",
+            "type",
+        ]
+
+
+class GetCustomerProfilesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = [
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "upload_at"
+            "type",
+        ]
