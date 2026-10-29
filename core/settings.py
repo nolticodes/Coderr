@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_filters',
+    # 'django_filters',
     'rest_framework',
     'rest_framework.authtoken',
 
@@ -145,3 +145,5 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ],
 }
+
+AUTH_USER_MODEL = "auth_app.User"
