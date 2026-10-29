@@ -2,10 +2,18 @@ from rest_framework import generics, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from profile_app.models import Profile
 
-from .serializers import GetProfileDetailsSerializer, PatchProfileDetailsRequestSerializer, PatchProfileDetailsResponseSerializer
+from .serializers import (
+    GetProfileDetailsSerializer, 
+    PatchProfileDetailsRequestSerializer, 
+    PatchProfileDetailsResponseSerializer,
+    GetBusinessProfilesSerializer,
+    GetCustomerProfilesSerializer
+    )
 
 from .permissions import IsOwnerOrReadOnly
 
@@ -56,3 +64,44 @@ class ProfileDetailsView(generics.RetrieveUpdateDestroyAPIView):
             response_serializer.data,
             status=status.HTTP_200_OK
         )
+
+
+class GetProfilesBusinessListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profiles = Profile.objects.filter(user__type="business")
+
+        serializer = GetBusinessProfilesSerializer(
+            profiles,
+            many = True,
+            )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+
+class GetProfilesCustomerListView(APIView):
+    
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profiles = Profile.objects.filter(user__type="customer")
+
+        serializer = GetCustomerProfilesSerializer(
+            profiles,
+            many = True
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+        
+
+
+    
+
