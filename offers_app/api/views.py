@@ -10,26 +10,20 @@ from offers_app.models import Offer
 
 from .serializers import GetOffersListSerializer
 
+from .pagination import OffersPagination
 
-class GetOffersListView(APIView):
 
+class GetOffersListView(generics.ListAPIView):
     permission_classes = [AllowAny]
+    serializer_class = GetOffersListSerializer
+    pagination_class = OffersPagination
 
-    queryset = Offer.objects.annotate(
-        min_price=Min("details__price"),
-        min_delivery_time=Min("details__delivery_time"),
-    ).select_related('user').prefetch_related('details')
-
-    def get(self, request):
-
-        offers = self.queryset.all()
-
-        serializer = GetOffersListSerializer(
-            offers,
-            many=True
+    queryset = (
+        Offer.objects.annotate(
+            min_price=Min("details__price"),
+            min_delivery_time=Min("details__delivery_time"),
         )
-
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
+        .select_related("user")
+        .prefetch_related("details")
+        .order_by("id")
+    )
