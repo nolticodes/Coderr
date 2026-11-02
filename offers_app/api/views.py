@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from offers_app.models import Offer
 
-from .serializers import GetOffersListSerializer, PostNewOfferRequestSerializer
+from .serializers import GetOffersListSerializer, PostNewOfferRequestSerializer, PostNewOfferResponseSerializer
 
 from .pagination import OffersPagination
 
@@ -61,6 +61,9 @@ class OfferListCreateView(generics.ListCreateAPIView):
             )
 
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
         

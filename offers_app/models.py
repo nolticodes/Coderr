@@ -36,3 +36,4 @@ class OfferDetail(models.Model):
     delivery_time = models.IntegerField()
     features = models.JSONField(default=list)
     offer_type = models.CharField(choices=TYPE_CHOICES, default="basic")
+    details = models.JSONField(default=list)

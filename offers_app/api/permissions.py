@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 class IsBusinessUser(permissions.BasePermission):
-    def has_permission(self, request, view, obj):
+    def has_permission(self, request, obj):
         if request.method == "GET":
             return True
 

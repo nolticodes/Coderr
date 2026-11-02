@@ -104,6 +104,13 @@ class PostNewOfferRequestSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def create(self, validated_data):
+        details_data = validated_data.pop('details')
+        new_offer = Offer.objects.create(**validated_data)
+        for detail_data in details_data:
+            OfferDetail.objects.create(offer = new_offer, **detail_data)
+        return new_offer
+
 
 class PostNewOfferResponseSerializer(serializers.ModelSerializer):
 
