@@ -15,13 +15,14 @@ class OfferUserDetailsSerializer(serializers.ModelSerializer):
             "username"
         ]
 
+
 class OfferDetailSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField()
 
     def get_url(self, obj):
         return f"/offerdetails/{obj.pk}/"
-    
-    class Meta: 
+
+    class Meta:
         model = OfferDetail
         fields = [
             "id",
@@ -57,4 +58,65 @@ class GetOffersListSerializer(serializers.ModelSerializer):
             "min_price",
             "min_delivery_time",
             "user_details"
+        ]
+
+
+class OfferStatsSerializer(serializers.ModelSerializer):
+    delivery_time_in_days = serializers.IntegerField(
+        source="delivery_time"
+    )
+
+    features = serializers.ListField(
+        child=serializers.CharField()
+    )
+
+    class Meta:
+        model = OfferDetail
+        fields = [
+            "id",
+            "title",
+            "revisions",
+            "delivery_time_in_days",
+            "price",
+            "features",
+            "offer_type"
+        ]
+
+
+class PostNewOfferRequestSerializer(serializers.ModelSerializer):
+    details = OfferStatsSerializer(
+        many=True
+    )
+
+    class Meta:
+        model = Offer
+        fields = [
+            "title",
+            "image",
+            "description",
+            "details"
+        ]
+
+    def validate_details(self, value):
+        if len(value) != 3:
+            raise serializers.ValidationError(
+                "Ein Angebot muss genau drei Details enthalten."
+            )
+        return value
+
+
+class PostNewOfferResponseSerializer(serializers.ModelSerializer):
+
+    details = OfferStatsSerializer(
+        many=True
+    )
+
+    class Meta:
+        model = Offer
+        fields = [
+            "id",
+            "title",
+            "image",
+            "description",
+            "details"
         ]
