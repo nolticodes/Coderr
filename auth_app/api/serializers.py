@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from auth_app.models import User
-
+from profile_app.models import Profile
 
 class RegistrationPostSerializer(serializers.ModelSerializer):
 
@@ -41,6 +41,9 @@ class RegistrationPostSerializer(serializers.ModelSerializer):
         user.type = validated_data["type"]
         user.set_password(password)
         user.save()
+
+        Profile.objects.create(user=user)
+
         return user
 
 class LoginSerializer(serializers.Serializer):
