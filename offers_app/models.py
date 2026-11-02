@@ -18,10 +18,21 @@ class Offer(models.Model):
 
 
 class OfferDetail(models.Model):
+
+    TYPE_CHOICES = [
+        ('basic', "Basic"),
+        ('standard', 'Standard'),
+        ('premium', 'Premium')
+    ]
+
     offer = models.ForeignKey(
         Offer,
         on_delete=models.CASCADE,
         related_name="details",
     )
+    title = models.CharField(max_length=255)
+    revisions = models.IntegerField()
     price = models.IntegerField()
     delivery_time = models.IntegerField()
+    features = models.JSONField(default=list)
+    offer_type = models.CharField(choices=TYPE_CHOICES, default="basic")
