@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.db.models import Min
+from django.db.models import Q
 
 from offers_app.models import Offer
 
@@ -27,3 +28,28 @@ class GetOffersListView(generics.ListAPIView):
         .prefetch_related("details")
         .order_by("id")
     )
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        creator_id_param = self.request.query_params.get("creator_id")
+        if creator_id_param is not None:
+            queryset = queryset.filter(user_id=creator_id_param)
+
+        min_price_param = self.request.query_params.get("min_price")
+        if min_price_param is not None:
+            queryset = queryset.filter(min_price__gte=min_price_param)
+
+        max_delivery_time = self.request.query_params.get("max_delivery_time")
+        if max_delivery_time is not None:
+            queryset = queryset.filter(
+                min_delivery_time__lte=max_delivery_time)
+
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search)
+                | Q(description__icontains=search)
+            )
+
+        return queryset
