@@ -22,6 +22,11 @@ class GetProfileDetailsSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    created_at = serializers.DateTimeField(
+        source="user.created_at",
+        read_only=True,
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -41,6 +46,11 @@ class GetProfileDetailsSerializer(serializers.ModelSerializer):
 
 
 class PatchProfileDetailsRequestSerializer(serializers.ModelSerializer):
+
+    email = serializers.EmailField(
+        source="user.email"
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -53,8 +63,39 @@ class PatchProfileDetailsRequestSerializer(serializers.ModelSerializer):
             "email",
         ]
 
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+
+        if "email" in user_data:
+            user = instance.user
+            user.email = user_data["email"]
+            user.save(update_fields=["email"])
+
+        return super().update(instance, validated_data)
+
 
 class PatchProfileDetailsResponseSerializer(serializers.ModelSerializer):
+
+    username = serializers.CharField(
+        source = "user.username",
+        read_only = True
+    )
+
+    type = serializers.CharField(
+        source = "user.type",
+        read_only = True
+    )
+
+    email = serializers.EmailField(
+            source="user.email",
+            read_only=True,
+        )
+    
+    created_at = serializers.DateTimeField(
+        source="user.created_at",
+        read_only=True,
+    )
+    
     class Meta:
         model = Profile
         fields = [
