@@ -9,13 +9,14 @@ from django.db.models import Q
 
 from offers_app.models import Offer
 
-from .serializers import GetOffersListSerializer
+from .serializers import GetOffersListSerializer, PostNewOfferRequestSerializer
 
 from .pagination import OffersPagination
 
+from .permissions import IsBusinessUser
 
-class GetOffersListView(generics.ListAPIView):
-    permission_classes = [AllowAny]
+class OfferListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsBusinessUser]
     serializer_class = GetOffersListSerializer
     pagination_class = OffersPagination
 
@@ -28,6 +29,13 @@ class GetOffersListView(generics.ListAPIView):
         .prefetch_related("details")
         .order_by("id")
     )
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return GetOffersListSerializer
+
+        if self.request.method == "POST":
+            return PostNewOfferRequestSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -53,3 +61,22 @@ class GetOffersListView(generics.ListAPIView):
             )
 
         return queryset
+
+    def create(self, request, *args, **kwargs):
+        
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(raise_exception=True)
+        
+        self.perform_create(serializer)
+
+        response_serializer = PostNewOfferResponseSerializer(
+            serializer.instance,
+        )
+
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED
+        )
