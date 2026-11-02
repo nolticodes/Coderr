@@ -77,25 +77,25 @@ class PatchProfileDetailsRequestSerializer(serializers.ModelSerializer):
 class PatchProfileDetailsResponseSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(
-        source = "user.username",
-        read_only = True
+        source="user.username",
+        read_only=True
     )
 
     type = serializers.CharField(
-        source = "user.type",
-        read_only = True
+        source="user.type",
+        read_only=True
     )
 
     email = serializers.EmailField(
-            source="user.email",
-            read_only=True,
-        )
-    
+        source="user.email",
+        read_only=True,
+    )
+
     created_at = serializers.DateTimeField(
         source="user.created_at",
         read_only=True,
     )
-    
+
     class Meta:
         model = Profile
         fields = [
@@ -116,6 +116,16 @@ class PatchProfileDetailsResponseSerializer(serializers.ModelSerializer):
 
 class GetBusinessProfilesSerializer(serializers.ModelSerializer):
 
+    username = serializers.CharField(
+        source="user.username",
+        read_only=True
+    )
+
+    type = serializers.CharField(
+        source="user.type",
+        read_only=True
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -134,6 +144,16 @@ class GetBusinessProfilesSerializer(serializers.ModelSerializer):
 
 class GetCustomerProfilesSerializer(serializers.ModelSerializer):
 
+    username = serializers.CharField(
+        source="user.username",
+        read_only=True
+    )
+
+    type = serializers.CharField(
+        source="user.type",
+        read_only=True
+    )
+
     class Meta:
         model = Profile
         fields = [
@@ -142,6 +162,6 @@ class GetCustomerProfilesSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "file",
-            "upload_at"
+            "uploaded_at",
             "type",
         ]
