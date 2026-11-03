@@ -9,11 +9,18 @@ from django.db.models import Q
 
 from offers_app.models import Offer
 
-from .serializers import GetOffersListSerializer, PostNewOfferRequestSerializer, PostNewOfferResponseSerializer
+from .serializers import (
+    GetOffersListSerializer,
+    PostNewOfferRequestSerializer,
+    PostNewOfferResponseSerializer,
+    GetOfferDetailsSerializer,
+    PatchOfferDetailsRequestSerializer,
+)
 
 from .pagination import OffersPagination
 
-from .permissions import IsBusinessUser
+from .permissions import IsBusinessUser, IsAuthenticatedAndOwnerOrReadOnly
+
 
 class OfferListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsBusinessUser]
@@ -66,13 +73,13 @@ class OfferListCreateView(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        
+
         serializer = self.get_serializer(
             data=request.data,
         )
 
         serializer.is_valid(raise_exception=True)
-        
+
         self.perform_create(serializer)
 
         response_serializer = PostNewOfferResponseSerializer(
@@ -82,4 +89,49 @@ class OfferListCreateView(generics.ListCreateAPIView):
         return Response(
             response_serializer.data,
             status=status.HTTP_201_CREATED
+        )
+
+
+class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticatedAndOwnerOrReadOnly]
+    serializer_class = GetOfferDetailsSerializer
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
+
+    queryset = (
+        Offer.objects.annotate(
+            min_price=Min("details__price"),
+            min_delivery_time=Min("details__delivery_time"),
+        )
+        .select_related("user")
+        .prefetch_related("details")
+    )
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return GetOfferDetailsSerializer
+
+        if self.request.method == "PATCH":
+            return PatchOfferDetailsRequestSerializer
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+        
+        self.perform_update(serializer)
+
+        response_serializer = PostNewOfferResponseSerializer(
+                    serializer.instance,
+                )
+        
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_200_OK
         )
