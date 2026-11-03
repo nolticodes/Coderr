@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from django.db.models import Min
 from django.db.models import Q
 
-from offers_app.models import Offer
+from offers_app.models import Offer, OfferDetail
 
 from .serializers import (
     GetOffersListSerializer,
@@ -15,6 +15,7 @@ from .serializers import (
     PostNewOfferResponseSerializer,
     GetOfferDetailsSerializer,
     PatchOfferDetailsRequestSerializer,
+    OfferStatsSerializer,
 )
 
 from .pagination import OffersPagination
@@ -135,3 +136,11 @@ class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             response_serializer.data,
             status=status.HTTP_200_OK
         )
+
+
+class SpecificOfferDetailView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OfferStatsSerializer
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
+    queryset = OfferDetail.objects.all()
