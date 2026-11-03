@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from django.db import transaction
+
 from auth_app.models import User
 from offers_app.models import Offer
 
@@ -108,7 +110,7 @@ class PostNewOfferRequestSerializer(serializers.ModelSerializer):
         details_data = validated_data.pop('details')
         new_offer = Offer.objects.create(**validated_data)
         for detail_data in details_data:
-            OfferDetail.objects.create(offer = new_offer, **detail_data)
+            OfferDetail.objects.create(offer=new_offer, **detail_data)
         return new_offer
 
 
@@ -127,3 +129,62 @@ class PostNewOfferResponseSerializer(serializers.ModelSerializer):
             "description",
             "details"
         ]
+
+
+class GetOfferDetailsSerializer(serializers.ModelSerializer):
+
+    details = OfferDetailSerializer(
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = Offer
+        fields = [
+            "id",
+            "user",
+            "title",
+            "image",
+            "description",
+            "created_at",
+            "updated_at",
+            "details",
+        ]
+
+
+class PatchOfferDetailsRequestSerializer(serializers.ModelSerializer):
+
+    details = OfferStatsSerializer(
+        many=True,
+    )
+
+    class Meta:
+        model = Offer
+        fields = [
+            "title",
+            "details"
+        ]
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop("details", [])
+
+        for detail_data in details_data:
+            offer_type = detail_data.get("offer_type")
+
+            if offer_type is None:
+                raise serializers.ValidationError({
+                    "details": "Please submit the offer_type for change."
+                })
+
+            detail = instance.details.get(offer_type=offer_type)
+
+            for field, value in detail_data.items():
+                setattr(detail, field, value)
+
+            detail.save()
+
+        if hasattr(instance, "_prefetched_objects_cache"):
+            instance._prefetched_objects_cache.pop("details", None)
+
+        return super().update(instance, validated_data)
