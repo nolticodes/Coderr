@@ -76,3 +76,18 @@ class PostOrderResponseSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class PatchOrderDetailRequestSerializer(serializers.ModelSerializer):
+
+    status = serializers.ChoiceField(
+        choices=Orders.STATUS_CHOICES
+    )
+
+    class Meta:
+        model = Orders
+        fields = [
+            'status'
+        ]
+
+
