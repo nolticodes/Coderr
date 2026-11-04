@@ -2,6 +2,8 @@ from django.db import models
 
 from auth_app.models import User
 
+from offers_app.models import OfferDetail
+
 # Create your models here.
 
 
@@ -33,3 +35,10 @@ class Orders(models.Model):
         max_length=50, choices=STATUS_CHOICES, default="in_progress")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    offer_detail = models.ForeignKey(
+        OfferDetail,
+        on_delete=models.PROTECT,
+        related_name="orders",
+        null=True,
+        blank=True,
+    )
