@@ -1,5 +1,5 @@
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 
 from django.db.models import Q
@@ -70,6 +70,11 @@ class PatchDeleteOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = "pk"
     queryset = Orders.objects.all()
 
+    def get_permissions(self):
+        if self.request.method == "DELETE":
+            return [IsAdminUser()]
+        return [IsBusinessAndIsAuthenticated()]
+
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
 
@@ -91,4 +96,3 @@ class PatchDeleteOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
             response_serializer.data,
             status=status.HTTP_200_OK
         )
-
