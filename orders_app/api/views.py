@@ -8,10 +8,12 @@ from .serializers import (
     GetOrdersResonseSerializer,
     PostOrderRequestSerializer,
     PostOrderResponseSerializer,
-    )
+    PatchOrderDetailRequestSerializer,
+)
 
 from .permissions import (
     IsCustomerAndIsAuthenticated,
+    IsBusinessAndIsAuthenticated
 )
 
 from orders_app.models import Orders
@@ -58,3 +60,35 @@ class OrderListCreateView(generics.ListCreateAPIView):
             response_serializer.data,
             status=status.HTTP_201_CREATED
         )
+
+
+class PatchDeleteOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
+    http_method_names = ["patch", "delete"]
+    permission_classes = [IsBusinessAndIsAuthenticated]
+    serializer_class = PatchOrderDetailRequestSerializer
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
+    queryset = Orders.objects.all()
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_update(serializer)
+
+        response_serializer = PostOrderResponseSerializer(
+            serializer.instance,
+        )
+
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_200_OK
+        )
+
