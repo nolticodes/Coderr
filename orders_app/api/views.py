@@ -118,3 +118,20 @@ class GetProgressOrderCountView(APIView):
             "order_count": orders_in_progress
         })
 
+
+class GetProgressOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, business_user_id):
+        business_user = get_object_or_404(
+            User,
+            pk=business_user_id,
+            type="business"
+        )
+
+        business_user_orders = Orders.objects.filter(business_user=business_user)
+        orders_completed = business_user_orders.filter(status="completed").count()
+
+        return Response ({
+            "completed_order_count": orders_completed
+        })
