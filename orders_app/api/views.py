@@ -1,8 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from .serializers import (
     GetOrdersResonseSerializer,
@@ -17,6 +19,7 @@ from .permissions import (
 )
 
 from orders_app.models import Orders
+from auth_app.models import User
 
 
 class OrderListCreateView(generics.ListCreateAPIView):
@@ -96,3 +99,22 @@ class PatchDeleteOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
             response_serializer.data,
             status=status.HTTP_200_OK
         )
+
+
+class GetProgressOrderCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, business_user_id):
+        business_user = get_object_or_404(
+            User,
+            pk=business_user_id,
+            type="business"
+        )
+
+        business_user_orders = Orders.objects.filter(business_user=business_user)
+        orders_in_progress = business_user_orders.filter(status="in_progress").count()
+
+        return Response ({
+            "order_count": orders_in_progress
+        })
+
