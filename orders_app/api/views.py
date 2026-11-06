@@ -119,7 +119,7 @@ class GetProgressOrderCountView(APIView):
         })
 
 
-class GetProgressOrderCountView(APIView):
+class GetCompletedOrderCountView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, business_user_id):
