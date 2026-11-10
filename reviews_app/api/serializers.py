@@ -15,3 +15,29 @@ class GetReviewsListResponseSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at'
         ]
+
+
+class PostReviewRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Reviews
+        fields = [
+            'business_user',
+            'rating',
+            'description'
+        ]
+
+
+class PostReviewResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Reviews
+        fiels = [
+            'id',
+            'business_user',
+            'reviewer',
+            'rating',
+            'description',
+            'created_at',
+            'updated_at'
+        ]
