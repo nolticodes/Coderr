@@ -4,13 +4,26 @@ from rest_framework.response import Response
 
 from reviews_app.models import Reviews
 
-from .serializers import GetReviewsListResponseSerializer
+from .serializers import (
+    GetReviewsListResponseSerializer,
+    PostReviewRequestSerializer,
+    PostReviewResponseSerializer
+)
 
 
 class ReviewsListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = GetReviewsListResponseSerializer
     queryset = Reviews.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return GetReviewsListResponseSerializer
+
+        if self.request.method == "POST":
+            return PostReviewRequestSerializer
+
+        return GetReviewsListResponseSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -33,3 +46,13 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
             queryset = queryset.order_by(ordering_param)
 
         return queryset
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(
+            data=request.data,
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_create(serializer)
