@@ -50,7 +50,7 @@ class PatchReviewDetailRequestView(serializers.ModelSerializer):
         model = Reviews
         fields = [
             'rating',
-            'desciption'
+            'description'
         ]
 
 
