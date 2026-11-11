@@ -32,7 +32,7 @@ class PostReviewResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reviews
-        fiels = [
+        fields = [
             'id',
             'business_user',
             'reviewer',
