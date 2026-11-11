@@ -10,9 +10,12 @@ from .serializers import (
     PostReviewResponseSerializer
 )
 
+from .permissions import (
+    IsCustomerAndIsAuthenticated
+)
+
 
 class ReviewsListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsAuthenticated]
     serializer_class = GetReviewsListResponseSerializer
     queryset = Reviews.objects.all()
 
@@ -24,6 +27,15 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
             return PostReviewRequestSerializer
 
         return GetReviewsListResponseSerializer
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAuthenticated()]
+
+        if self.request.method == "POST":
+            return [IsCustomerAndIsAuthenticated()]
+
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -55,4 +67,15 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
 
         serializer.is_valid(raise_exception=True)
 
-        self.perform_create(serializer)
+        serializer.save(reviewer=request.user)
+
+        response_serializer = PostReviewResponseSerializer(
+            serializer.instance,
+        )
+
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED
+        )
+
+
