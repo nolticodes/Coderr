@@ -8,7 +8,8 @@ from .serializers import (
     GetReviewsListResponseSerializer,
     PostReviewRequestSerializer,
     PostReviewResponseSerializer,
-    PatchReviewDetailRequestView
+    PatchReviewDetailRequestView,
+    PatchReviewDetailResponseView
 )
 
 from .permissions import (
@@ -86,6 +87,7 @@ class PatchDeleteReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Reviews.objects.all()
     lookup_field = "pk"
     lookup_url_kwarg = "pk"
+    serializer_class = PatchReviewDetailRequestView
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -100,7 +102,7 @@ class PatchDeleteReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         self.perform_update(serializer)
 
-        response_serializer = PatchReviewDetailRequestView(
+        response_serializer = PatchReviewDetailResponseView(
             serializer.instance,
         )
 
