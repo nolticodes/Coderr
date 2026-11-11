@@ -7,11 +7,13 @@ from reviews_app.models import Reviews
 from .serializers import (
     GetReviewsListResponseSerializer,
     PostReviewRequestSerializer,
-    PostReviewResponseSerializer
+    PostReviewResponseSerializer,
+    PatchReviewDetailRequestView
 )
 
 from .permissions import (
-    IsCustomerAndIsAuthenticated
+    IsCustomerAndIsAuthenticated,
+    IsOwner,
 )
 
 
@@ -77,5 +79,35 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
             response_serializer.data,
             status=status.HTTP_201_CREATED
         )
+
+
+class PatchDeleteReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsOwner]
+    queryset = Reviews.objects.all()
+    lookup_field = "pk"
+    lookup_url_kwarg = "pk"
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_update(serializer)
+
+        response_serializer = PatchReviewDetailRequestView(
+            serializer.instance,
+        )
+
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_200_OK
+        )
+
 
 
