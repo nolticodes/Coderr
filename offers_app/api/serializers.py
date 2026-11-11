@@ -72,6 +72,8 @@ class OfferStatsSerializer(serializers.ModelSerializer):
         child=serializers.CharField()
     )
 
+    revisions = serializers.IntegerField(required=False)
+
     class Meta:
         model = OfferDetail
         fields = [
@@ -108,9 +110,22 @@ class PostNewOfferRequestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         details_data = validated_data.pop('details')
+        default_revisions = {
+            "basic": 2,
+            "standard": 5,
+            "premium": 10,
+        }
         new_offer = Offer.objects.create(**validated_data)
         for detail_data in details_data:
-            OfferDetail.objects.create(offer=new_offer, **detail_data)
+            detail_data.setdefault(
+                "revisions",
+                default_revisions[detail_data["offer_type"]],
+            )
+    
+            OfferDetail.objects.create(
+                offer=new_offer,
+                **detail_data,
+            )
         return new_offer
 
 
