@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from reviews_app.models import Reviews
 
+
 class GetReviewsListResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -29,6 +30,31 @@ class PostReviewRequestSerializer(serializers.ModelSerializer):
 
 
 class PostReviewResponseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Reviews
+        fields = [
+            'id',
+            'business_user',
+            'reviewer',
+            'rating',
+            'description',
+            'created_at',
+            'updated_at'
+        ]
+
+
+class PatchReviewDetailRequestView(serializers.ModelSerializer):
+
+    class Meta:
+        model = Reviews
+        fields = [
+            'rating',
+            'desciption'
+        ]
+
+
+class PatchReviewDetailResponseView(serializers.ModelSerializer):
 
     class Meta:
         model = Reviews
