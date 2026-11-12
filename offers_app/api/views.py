@@ -19,11 +19,12 @@ from .serializers import (
 )
 
 from .pagination import OffersPagination
-
 from .permissions import IsBusinessUser, IsAuthenticatedAndOwnerOrReadOnly
 
 
 class OfferListCreateView(generics.ListCreateAPIView):
+    """List offers with filtering and pagination, and allow business users to create offers."""
+
     permission_classes = [IsBusinessUser]
     serializer_class = GetOffersListSerializer
     pagination_class = OffersPagination
@@ -39,6 +40,7 @@ class OfferListCreateView(generics.ListCreateAPIView):
     )
 
     def get_serializer_class(self):
+        """Select the serializer for listing or creating offers."""
         if self.request.method == "GET":
             return GetOffersListSerializer
 
@@ -46,6 +48,7 @@ class OfferListCreateView(generics.ListCreateAPIView):
             return PostNewOfferRequestSerializer
 
     def get_queryset(self):
+        """Filter offers by creator, minimum price, maximum delivery time, and search text."""
         queryset = super().get_queryset()
 
         creator_id_param = self.request.query_params.get("creator_id")
@@ -59,7 +62,8 @@ class OfferListCreateView(generics.ListCreateAPIView):
         max_delivery_time = self.request.query_params.get("max_delivery_time")
         if max_delivery_time is not None:
             queryset = queryset.filter(
-                min_delivery_time__lte=max_delivery_time)
+                min_delivery_time__lte=max_delivery_time
+            )
 
         search = self.request.query_params.get("search")
         if search:
@@ -71,10 +75,11 @@ class OfferListCreateView(generics.ListCreateAPIView):
         return queryset
 
     def perform_create(self, serializer):
+        """Save the offer with the authenticated user as its creator."""
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-
+        """Validate and create an offer, then return its full package details."""
         serializer = self.get_serializer(
             data=request.data,
         )
@@ -94,6 +99,8 @@ class OfferListCreateView(generics.ListCreateAPIView):
 
 
 class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    """Retrieve an offer and restrict updates and deletion to its owner."""
+
     permission_classes = [IsAuthenticatedAndOwnerOrReadOnly]
     serializer_class = GetOfferDetailsSerializer
     lookup_field = "pk"
@@ -109,6 +116,7 @@ class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     )
 
     def get_serializer_class(self):
+        """Select the serializer for retrieving or partially updating an offer."""
         if self.request.method == "GET":
             return GetOfferDetailsSerializer
 
@@ -116,6 +124,7 @@ class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
             return PatchOfferDetailsRequestSerializer
 
     def partial_update(self, request, *args, **kwargs):
+        """Validate and apply partial changes, then return the offer with full package details."""
         instance = self.get_object()
 
         serializer = self.get_serializer(
@@ -125,13 +134,13 @@ class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
         )
 
         serializer.is_valid(raise_exception=True)
-        
+
         self.perform_update(serializer)
 
         response_serializer = PostNewOfferResponseSerializer(
-                    serializer.instance,
-                )
-        
+            serializer.instance,
+        )
+
         return Response(
             response_serializer.data,
             status=status.HTTP_200_OK
@@ -139,6 +148,8 @@ class OfferDetailsListCreateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SpecificOfferDetailView(generics.RetrieveAPIView):
+    """Retrieve a single offer package for an authenticated user."""
+
     permission_classes = [IsAuthenticated]
     serializer_class = OfferStatsSerializer
     lookup_field = "pk"

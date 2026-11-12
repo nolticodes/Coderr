@@ -1,14 +1,13 @@
 from rest_framework import serializers
-
 from django.db import transaction
 
 from auth_app.models import User
-from offers_app.models import Offer
-
-from offers_app.models import OfferDetail
+from offers_app.models import Offer, OfferDetail
 
 
 class OfferUserDetailsSerializer(serializers.ModelSerializer):
+    """Serialize the offer creator's name and username."""
+
     class Meta:
         model = User
         fields = [
@@ -19,9 +18,12 @@ class OfferUserDetailsSerializer(serializers.ModelSerializer):
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
+    """Serialize an offer detail's ID and relative URL."""
+
     url = serializers.SerializerMethodField()
 
     def get_url(self, obj):
+        """Return the relative URL for the offer detail."""
         return f"/offerdetails/{obj.pk}/"
 
     class Meta:
@@ -33,6 +35,8 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 
 
 class GetOffersListSerializer(serializers.ModelSerializer):
+    """Serialize offers with detail links, creator data, and annotated minima."""
+
     user_details = OfferUserDetailsSerializer(
         source="user",
         read_only=True,
@@ -64,6 +68,8 @@ class GetOffersListSerializer(serializers.ModelSerializer):
 
 
 class OfferStatsSerializer(serializers.ModelSerializer):
+    """Serialize and validate the fields of an individual offer package."""
+
     delivery_time_in_days = serializers.IntegerField(
         source="delivery_time"
     )
@@ -88,6 +94,8 @@ class OfferStatsSerializer(serializers.ModelSerializer):
 
 
 class PostNewOfferRequestSerializer(serializers.ModelSerializer):
+    """Validate new offer data and create its nested packages."""
+
     details = OfferStatsSerializer(
         many=True
     )
@@ -102,6 +110,7 @@ class PostNewOfferRequestSerializer(serializers.ModelSerializer):
         ]
 
     def validate_details(self, value):
+        """Require exactly three offer details."""
         if len(value) != 3:
             raise serializers.ValidationError(
                 "Ein Angebot muss genau drei Details enthalten."
@@ -109,27 +118,32 @@ class PostNewOfferRequestSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        details_data = validated_data.pop('details')
+        """Create the offer and its details, applying revision defaults by type."""
+        details_data = validated_data.pop("details")
         default_revisions = {
             "basic": 2,
             "standard": 5,
             "premium": 10,
         }
+
         new_offer = Offer.objects.create(**validated_data)
+
         for detail_data in details_data:
             detail_data.setdefault(
                 "revisions",
                 default_revisions[detail_data["offer_type"]],
             )
-    
+
             OfferDetail.objects.create(
                 offer=new_offer,
                 **detail_data,
             )
+
         return new_offer
 
 
 class PostNewOfferResponseSerializer(serializers.ModelSerializer):
+    """Serialize a saved offer with its full package details."""
 
     details = OfferStatsSerializer(
         many=True
@@ -147,6 +161,7 @@ class PostNewOfferResponseSerializer(serializers.ModelSerializer):
 
 
 class GetOfferDetailsSerializer(serializers.ModelSerializer):
+    """Serialize a single offer with its creator ID and detail links."""
 
     details = OfferDetailSerializer(
         many=True,
@@ -168,6 +183,7 @@ class GetOfferDetailsSerializer(serializers.ModelSerializer):
 
 
 class PatchOfferDetailsRequestSerializer(serializers.ModelSerializer):
+    """Validate partial offer changes and update packages by offer type."""
 
     details = OfferStatsSerializer(
         many=True,
@@ -182,6 +198,7 @@ class PatchOfferDetailsRequestSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        """Atomically update supplied packages and the offer's own fields."""
         details_data = validated_data.pop("details", [])
 
         for detail_data in details_data:
