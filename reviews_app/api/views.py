@@ -9,7 +9,7 @@ from .serializers import (
     PostReviewRequestSerializer,
     PostReviewResponseSerializer,
     PatchReviewDetailRequestView,
-    PatchReviewDetailResponseView
+    PatchReviewDetailResponseView,
 )
 
 from .permissions import (
@@ -19,10 +19,13 @@ from .permissions import (
 
 
 class ReviewsListCreateView(generics.ListCreateAPIView):
+    """List reviews for authenticated users and allow customers to create reviews."""
+
     serializer_class = GetReviewsListResponseSerializer
     queryset = Reviews.objects.all()
 
     def get_serializer_class(self):
+        """Select the creation serializer for POST and the list serializer otherwise."""
         if self.request.method == "GET":
             return GetReviewsListResponseSerializer
 
@@ -32,6 +35,7 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
         return GetReviewsListResponseSerializer
 
     def get_permissions(self):
+        """Require authentication for reading and customer status for creation."""
         if self.request.method == "GET":
             return [IsAuthenticated()]
 
@@ -41,18 +45,24 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
         return [IsAuthenticated()]
 
     def get_queryset(self):
+        """Filter reviews by provider and author, and apply an allowed ordering."""
         queryset = super().get_queryset()
 
         business_user_id_param = self.request.query_params.get(
-            "business_user_id")
+            "business_user_id"
+        )
         if business_user_id_param is not None:
-            queryset = queryset.filter(business_user_id=business_user_id_param)
+            queryset = queryset.filter(
+                business_user_id=business_user_id_param
+            )
 
         reviewer_user_id_param = self.request.query_params.get(
-            "reviewer_id")
+            "reviewer_id"
+        )
         if reviewer_user_id_param is not None:
             queryset = queryset.filter(
-                reviewer_id=reviewer_user_id_param)
+                reviewer_id=reviewer_user_id_param
+            )
 
         ordering_param = self.request.query_params.get(
             "ordering"
@@ -63,7 +73,7 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
         return queryset
 
     def create(self, request, *args, **kwargs):
-
+        """Create a review attributed to the current user and return its details."""
         serializer = self.get_serializer(
             data=request.data,
         )
@@ -78,11 +88,13 @@ class ReviewsListCreateView(generics.ListCreateAPIView):
 
         return Response(
             response_serializer.data,
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
 
 class PatchDeleteReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Restrict review retrieval, updates, and deletion to the review's author."""
+
     permission_classes = [IsOwner]
     queryset = Reviews.objects.all()
     lookup_field = "pk"
@@ -90,12 +102,13 @@ class PatchDeleteReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PatchReviewDetailRequestView
 
     def partial_update(self, request, *args, **kwargs):
+        """Validate partial review changes and return the updated review details."""
         instance = self.get_object()
-        
+
         serializer = self.get_serializer(
             instance,
             data=request.data,
-            partial=True
+            partial=True,
         )
 
         serializer.is_valid(raise_exception=True)
@@ -108,8 +121,5 @@ class PatchDeleteReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response(
             response_serializer.data,
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
-
-
-
