@@ -14,11 +14,13 @@ from .serializers import (
 
 
 class RegistrationPostView(APIView):
+    """Provide public access to user registration."""
 
     permission_classes = [AllowAny]
     serializer_class = RegistrationPostSerializer
 
     def post(self, request):
+        """Create a user and return an authentication token and user details."""
         serializer = RegistrationPostSerializer(data=request.data)
 
         data = {}
@@ -46,13 +48,16 @@ class RegistrationPostView(APIView):
 
 
 class LoginPostView(APIView):
+    """Provide public access to token-based login."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Authenticate credentials and return a token or validation errors."""
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
-            password = serializer.validated_data['password']
+            username = serializer.validated_data["username"]
+            password = serializer.validated_data["password"]
 
             user = authenticate(username=username, password=password)
 
