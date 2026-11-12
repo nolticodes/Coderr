@@ -7,30 +7,33 @@ from django.shortcuts import get_object_or_404
 
 
 class GetOrdersResonseSerializer(serializers.ModelSerializer):
+    """Serialize orders with participant IDs, purchased package data, and status."""
 
     class Meta:
         model = Orders
         fields = [
-            'id',
-            'customer_user',
-            'business_user',
-            'title',
-            'revisions',
-            'delivery_time_in_days',
-            'price',
-            'features',
-            'offer_type',
-            'status',
-            'created_at',
-            'updated_at'
+            "id",
+            "customer_user",
+            "business_user",
+            "title",
+            "revisions",
+            "delivery_time_in_days",
+            "price",
+            "features",
+            "offer_type",
+            "status",
+            "created_at",
+            "updated_at",
         ]
 
 
 class PostOrderRequestSerializer(serializers.Serializer):
+    """Accept an offer detail ID and create an order from the selected package."""
 
     offer_detail_id = serializers.IntegerField()
 
     def create(self, validated_data):
+        """Create an order for the current user using a snapshot of package data."""
         offer_detail_id = validated_data["offer_detail_id"]
 
         offer_detail = get_object_or_404(
@@ -59,6 +62,7 @@ class PostOrderRequestSerializer(serializers.Serializer):
 
 
 class PostOrderResponseSerializer(serializers.ModelSerializer):
+    """Serialize a saved order with package data, participants, and timestamps."""
 
     class Meta:
         model = Orders
@@ -79,6 +83,7 @@ class PostOrderResponseSerializer(serializers.ModelSerializer):
 
 
 class PatchOrderDetailRequestSerializer(serializers.ModelSerializer):
+    """Validate and update an order's status using the allowed status choices."""
 
     status = serializers.ChoiceField(
         choices=Orders.STATUS_CHOICES
@@ -87,7 +92,5 @@ class PatchOrderDetailRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Orders
         fields = [
-            'status'
+            "status"
         ]
-
-
