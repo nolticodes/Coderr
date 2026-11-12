@@ -1,12 +1,11 @@
 from rest_framework import permissions
 
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Erlaubt jedem eingeloggten Nutzer das Lesen (GET).
-    Schreiben (PATCH, PUT, DELETE) darf nur der Besitzer des Profils.
-    """
+    """Allow GET access and restrict other object operations to the profile owner."""
 
     def has_object_permission(self, request, view, obj):
+        """Allow GET requests or require ownership of the profile."""
         if request.method == "GET":
             return True
 

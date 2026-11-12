@@ -4,6 +4,7 @@ from profile_app.models import Profile
 
 
 class GetProfileDetailsSerializer(serializers.ModelSerializer):
+    """Serialize profile details with linked user information."""
 
     username = serializers.CharField(
         source="user.username",
@@ -15,13 +16,12 @@ class GetProfileDetailsSerializer(serializers.ModelSerializer):
     )
     type = serializers.CharField(
         source="user.type",
-        read_only=True
+        read_only=True,
     )
     user = serializers.IntegerField(
         source="user.id",
-        read_only=True
+        read_only=True,
     )
-
     created_at = serializers.DateTimeField(
         source="user.created_at",
         read_only=True,
@@ -46,9 +46,10 @@ class GetProfileDetailsSerializer(serializers.ModelSerializer):
 
 
 class PatchProfileDetailsRequestSerializer(serializers.ModelSerializer):
+    """Validate profile changes and updates to the linked user's email."""
 
     email = serializers.EmailField(
-        source="user.email"
+        source="user.email",
     )
 
     class Meta:
@@ -64,6 +65,7 @@ class PatchProfileDetailsRequestSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        """Update the linked user's email and save the remaining profile changes."""
         user_data = validated_data.pop("user", {})
 
         if "email" in user_data:
@@ -75,22 +77,20 @@ class PatchProfileDetailsRequestSerializer(serializers.ModelSerializer):
 
 
 class PatchProfileDetailsResponseSerializer(serializers.ModelSerializer):
+    """Serialize the updated profile with linked user information."""
 
     username = serializers.CharField(
         source="user.username",
-        read_only=True
+        read_only=True,
     )
-
     type = serializers.CharField(
         source="user.type",
-        read_only=True
+        read_only=True,
     )
-
     email = serializers.EmailField(
         source="user.email",
         read_only=True,
     )
-
     created_at = serializers.DateTimeField(
         source="user.created_at",
         read_only=True,
@@ -115,15 +115,15 @@ class PatchProfileDetailsResponseSerializer(serializers.ModelSerializer):
 
 
 class GetBusinessProfilesSerializer(serializers.ModelSerializer):
+    """Serialize business profile information with the user's name and type."""
 
     username = serializers.CharField(
         source="user.username",
-        read_only=True
+        read_only=True,
     )
-
     type = serializers.CharField(
         source="user.type",
-        read_only=True
+        read_only=True,
     )
 
     class Meta:
@@ -143,15 +143,15 @@ class GetBusinessProfilesSerializer(serializers.ModelSerializer):
 
 
 class GetCustomerProfilesSerializer(serializers.ModelSerializer):
+    """Serialize customer profile information and the file upload timestamp."""
 
     username = serializers.CharField(
         source="user.username",
-        read_only=True
+        read_only=True,
     )
-
     type = serializers.CharField(
         source="user.type",
-        read_only=True
+        read_only=True,
     )
 
     class Meta:
